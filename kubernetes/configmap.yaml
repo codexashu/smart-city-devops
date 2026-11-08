@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smartcity-config
+  namespace: smartcity
+data:
+  ENVIRONMENT: "production"
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  REDIS_ENABLED: "true"
+  API_V1_STR: "/api"
+  POSTGRES_DB: "smart_city_db"
+  POSTGRES_HOST: "postgres-service"
+  POSTGRES_PORT: "5432"

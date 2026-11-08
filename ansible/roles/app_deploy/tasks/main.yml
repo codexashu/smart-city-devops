@@ -1,0 +1,28 @@
+---
+- name: Create application directory
+  file:
+    path: /opt/smart-city-devops
+    state: directory
+    owner: ubuntu
+    group: docker
+    mode: '0755'
+
+- name: Pull or copy application repository
+  git:
+    repo: 'https://github.com/ashutoshpandey/smart-city-devops.git'
+    dest: /opt/smart-city-devops
+    version: main
+    force: yes
+  ignore_errors: yes
+
+- name: Start services using Docker Compose
+  command: docker compose up -d --build
+  args:
+    chdir: /opt/smart-city-devops
+
+- name: Verify backend container is running
+  command: docker ps --filter "name=smartcity_backend" --format "{{ '{{' }} .Status {{ '}}' }}"
+  register: backend_status
+  retries: 5
+  delay: 10
+  until: "'Up' in backend_status.stdout"

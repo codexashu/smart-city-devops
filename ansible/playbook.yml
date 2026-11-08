@@ -1,0 +1,8 @@
+---
+- name: Configure Production Host and Deploy Smart City Platform
+  hosts: smartcity_servers
+  become: yes
+  roles:
+    - common
+    - docker
+    - app_deploy

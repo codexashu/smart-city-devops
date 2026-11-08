@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # Elasticsearch: Centralized log store
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
+    container_name: smartcity_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - logging_net
+
+  # Kibana: Log search and visualization UI
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.10
+    container_name: smartcity_kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - logging_net
+
+  # Filebeat: Log harvester & shipper
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.17.10
+    container_name: smartcity_filebeat
+    user: root
+    volumes:
+      - ./logging/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - elasticsearch
+    networks:
+      - logging_net
+
+volumes:
+  es_data:
+
+networks:
+  logging_net:
+    driver: bridge

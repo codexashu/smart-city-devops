@@ -1,0 +1,97 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "System Performance & HTTP Telemetry",
+      "type": "row"
+    },
+    {
+      "id": 2,
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 1 },
+      "title": "HTTP Request Volume (req/sec)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum(rate(smartcity_http_requests_total[1m])) by (status_code)",
+          "legendFormat": "HTTP {{status_code}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 1 },
+      "title": "API Request Latency (p95)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(smartcity_http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "95th Percentile Latency (s)"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 1 },
+      "title": "Active Complaints Count by Status",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "smartcity_active_complaints_count",
+          "legendFormat": "{{status}}"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
+      "id": 5,
+      "title": "Civic Incident Resolution Metrics",
+      "type": "row"
+    },
+    {
+      "id": 6,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "title": "Complaints Registered by Category",
+      "type": "barchart",
+      "targets": [
+        {
+          "expr": "sum(smartcity_complaints_created_total) by (category)",
+          "legendFormat": "{{category}}"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "title": "Resolved Complaints by Department",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum(smartcity_complaints_resolved_total) by (department)",
+          "legendFormat": "{{department}}"
+        }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["smart-city", "devops", "fastapi", "infrastructure"],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "title": "Smart City DevOps Infrastructure Dashboard",
+  "uid": "smartcity-ops-01"
+}

@@ -1,0 +1,12 @@
+filebeat.inputs:
+  - type: container
+    paths:
+      - '/var/lib/docker/containers/*/*.log'
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  index: "smartcity-logs-%{+yyyy.MM.dd}"
+
+setup.template.name: "smartcity"
+setup.template.pattern: "smartcity-*"
+setup.ilm.enabled: false

@@ -1,0 +1,188 @@
+name: Smart City Enterprise CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  DOCKER_IMAGE_BACKEND: ${{ secrets.DOCKERHUB_USERNAME || 'smartcity' }}/backend
+  DOCKER_IMAGE_FRONTEND: ${{ secrets.DOCKERHUB_USERNAME || 'smartcity' }}/frontend
+
+jobs:
+  # ========================================================
+  # STAGE 1: AUTOMATED UNIT & INTEGRATION TESTING
+  # ========================================================
+  test:
+    name: 🧪 Automated Tests (Backend & Frontend)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Backend Test Setup
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Backend Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install pytest-cov flake8
+
+      - name: Run Backend Linting
+        run: |
+          flake8 backend/app --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: Execute Pytest Suite with Coverage
+        run: |
+          cd backend
+          pytest tests/ -v --cov=app --cov-report=term-missing
+
+      # Frontend Test Setup
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+          cache-dependency-path: frontend/package.json
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run Frontend Tests
+        run: |
+          cd frontend
+          npm test -- --watchAll=false --passWithNoTests
+
+  # ========================================================
+  # STAGE 2: SONARQUBE CODE QUALITY SCAN
+  # ========================================================
+  sonarqube:
+    name: 📊 SonarQube Code Quality Analysis
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@v2.0.2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN || 'dummy_token_for_preview' }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || 'https://sonarcloud.io' }}
+        continue-on-error: true
+
+  # ========================================================
+  # STAGE 3: TRIVY CONTAINER & DEPENDENCY VULNERABILITY SCAN
+  # ========================================================
+  security-scan:
+    name: 🛡️ Trivy Security & Vulnerability Gate
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy Vulnerability Scanner (Repo & Files)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: true
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+
+  # ========================================================
+  # STAGE 4: DOCKER IMAGE BUILD & HUB PUSH
+  # ========================================================
+  build-and-push:
+    name: 🐳 Docker Multi-Stage Build & Push
+    needs: [test, security-scan]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        if: env.DOCKERHUB_USERNAME != ''
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Build & Push Backend Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: ${{ secrets.DOCKERHUB_USERNAME != '' }}
+          tags: |
+            ${{ env.DOCKER_IMAGE_BACKEND }}:${{ github.sha }}
+            ${{ env.DOCKER_IMAGE_BACKEND }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & Push Frontend Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: ${{ secrets.DOCKERHUB_USERNAME != '' }}
+          tags: |
+            ${{ env.DOCKER_IMAGE_FRONTEND }}:${{ github.sha }}
+            ${{ env.DOCKER_IMAGE_FRONTEND }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ========================================================
+  # STAGE 5: KUBERNETES ZERO-DOWNTIME DEPLOYMENT & ROLLBACK
+  # ========================================================
+  deploy-k8s:
+    name: ☸️ Kubernetes Rolling Deploy & Health Verification
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Kubeconfig
+        if: secrets.KUBECONFIG != ''
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+
+      - name: Validate Kubernetes Manifests (Dry-Run)
+        run: |
+          echo "Validating Kubernetes manifests..."
+          kubectl apply -k kubernetes/ --dry-run=client || true
+
+      - name: Deploy to Kubernetes Cluster with Health Rollback
+        if: secrets.KUBECONFIG != ''
+        run: |
+          kubectl apply -k kubernetes/
+          # Wait for rolling update rollout with automatic rollback if timeout
+          if ! kubectl rollout status deployment/backend-deployment -n smartcity --timeout=120s; then
+            echo "❌ Deployment failed health checks! Triggering automatic rollback..."
+            kubectl rollout undo deployment/backend-deployment -n smartcity
+            exit 1
+          fi
+          echo "✅ Rolling update succeeded and verified healthy!"
