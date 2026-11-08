@@ -34,7 +34,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
-          pip install pytest-cov flake8
+          pip install pytest-cov flake8 email-validator
 
       - name: Run Backend Linting
         run: |
@@ -56,12 +56,12 @@ jobs:
       - name: Install Frontend Dependencies
         run: |
           cd frontend
-          npm ci
+          npm install
 
       - name: Run Frontend Tests
         run: |
           cd frontend
-          npm test -- --watchAll=false --passWithNoTests
+          CI=true npm test -- --passWithNoTests
 
   # ========================================================
   # STAGE 2: SONARQUBE CODE QUALITY SCAN

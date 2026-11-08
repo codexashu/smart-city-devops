@@ -16,3 +16,11 @@ class Department(Base):
     # Relationships
     officers = relationship("User", back_populates="department")
     complaints = relationship("Complaint", back_populates="department")
+
+    @property
+    def active_complaints_count(self):
+        return 0
+
+    @property
+    def resolved_complaints_count(self):
+        return 0
