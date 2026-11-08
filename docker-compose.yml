@@ -42,6 +42,7 @@ services:
 
   # 3. FastAPI Backend Service
   backend:
+    image: codexashu08/smartcity-backend:latest
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -73,6 +74,7 @@ services:
 
   # 4. React Frontend (Nginx Reverse Proxy)
   frontend:
+    image: codexashu08/smartcity-frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile

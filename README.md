@@ -1,6 +1,6 @@
 # 🏙️ Smart City Complaint & Infrastructure Management System (DevOps Edition)
 
-[![CI/CD Pipeline](https://github.com/ashutoshpandey/smart-city-devops/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/ashutoshpandey/smart-city-devops/actions/workflows/ci-cd.yml)
+[![CI/CD Pipeline](https://github.com/codexashu/smart-city-devops/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/codexashu/smart-city-devops/actions/workflows/ci-cd.yml)
 [![Docker](https://img.shields.io/badge/Docker-Multi--stage-blue.svg)](https://www.docker.com/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-HPA%20%7C%20Self--healing-326ce5.svg)](https://kubernetes.io/)
 [![Prometheus](https://img.shields.io/badge/Prometheus-Telemetry-e6522c.svg)](https://prometheus.io/)
@@ -156,7 +156,7 @@ smart-city-devops/
 
 ```bash
 # Clone the repository
-git clone https://github.com/ashutoshpandey/smart-city-devops.git
+git clone https://github.com/codexashu/smart-city-devops.git
 cd smart-city-devops
 
 # Launch the complete stack

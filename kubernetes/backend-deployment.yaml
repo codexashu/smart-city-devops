@@ -27,8 +27,8 @@ spec:
     spec:
       containers:
         - name: backend
-          image: smartcity/backend:latest
-          imagePullPolicy: IfNotPresent
+          image: codexashu08/smartcity-backend:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
           envFrom:

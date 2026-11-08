@@ -7,8 +7,8 @@ on:
     branches: [ main ]
 
 env:
-  DOCKER_IMAGE_BACKEND: ${{ secrets.DOCKERHUB_USERNAME || 'smartcity' }}/backend
-  DOCKER_IMAGE_FRONTEND: ${{ secrets.DOCKERHUB_USERNAME || 'smartcity' }}/frontend
+  DOCKER_IMAGE_BACKEND: codexashu08/smartcity-backend
+  DOCKER_IMAGE_FRONTEND: codexashu08/smartcity-frontend
 
 jobs:
   # ========================================================

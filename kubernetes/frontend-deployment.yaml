@@ -22,8 +22,8 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: smartcity/frontend:latest
-          imagePullPolicy: IfNotPresent
+          image: codexashu08/smartcity-frontend:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           resources:

@@ -9,7 +9,7 @@
 
 - name: Pull or copy application repository
   git:
-    repo: 'https://github.com/ashutoshpandey/smart-city-devops.git'
+    repo: 'https://github.com/codexashu/smart-city-devops.git'
     dest: /opt/smart-city-devops
     version: main
     force: yes
