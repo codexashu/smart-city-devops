@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import ComplaintCard from '../components/ComplaintCard';
 import ComplaintModal from '../components/ComplaintModal';
+import { SAMPLE_COMPLAINTS } from '../services/demoData';
 import { PlusCircle, Search, AlertCircle, CheckCircle, Clock, ShieldAlert } from 'lucide-react';
 
 export default function CitizenDashboard() {
@@ -27,9 +28,10 @@ export default function CitizenDashboard() {
     try {
       setLoading(true);
       const res = await api.get('/complaints/');
-      setComplaints(res.data);
+      setComplaints(res.data && res.data.length > 0 ? res.data : SAMPLE_COMPLAINTS);
     } catch (err) {
-      console.error('Failed to fetch complaints', err);
+      console.warn('Backend offline, loading interactive demo incidents', err);
+      setComplaints(SAMPLE_COMPLAINTS);
     } finally {
       setLoading(false);
     }
@@ -48,7 +50,15 @@ export default function CitizenDashboard() {
       setTrackedComplaint(res.data);
       setSelectedComplaint(res.data);
     } catch (err) {
-      setTrackError(`No complaint found with ID "${searchCode}". Check code and try again.`);
+      const localFound = complaints.find(
+        (c) => c.complaint_code.toLowerCase() === searchCode.trim().toLowerCase()
+      );
+      if (localFound) {
+        setTrackedComplaint(localFound);
+        setSelectedComplaint(localFound);
+      } else {
+        setTrackError(`No complaint found with ID "${searchCode}". Try searching "CMP-1001" or "CMP-1002".`);
+      }
     }
   };
 
@@ -86,7 +96,25 @@ export default function CitizenDashboard() {
       setShowNewModal(false);
       fetchComplaints();
     } catch (err) {
-      setFormError(err.response?.data?.detail || 'Failed to submit complaint');
+      // Local fallback creation for public preview
+      const newMock = {
+        id: Date.now(),
+        complaint_code: `CMP-${1000 + complaints.length + 1}`,
+        title,
+        description,
+        category,
+        priority,
+        status: 'SUBMITTED',
+        location_address: locationAddress,
+        created_at: new Date().toISOString(),
+        history: [{ id: Date.now(), status: 'SUBMITTED', remarks: 'Issue registered by citizen via web portal.', created_at: new Date().toISOString() }]
+      };
+      setComplaints([newMock, ...complaints]);
+      setTitle('');
+      setDescription('');
+      setLocationAddress('');
+      setPhotoFile(null);
+      setShowNewModal(false);
     } finally {
       setSubmitting(false);
     }

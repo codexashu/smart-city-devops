@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import ComplaintCard from '../components/ComplaintCard';
 import ComplaintModal from '../components/ComplaintModal';
+import { SAMPLE_COMPLAINTS, SAMPLE_DEPARTMENTS, SAMPLE_STATS } from '../services/demoData';
 import { ShieldCheck, Filter, AlertTriangle, Users, Building, Activity, CheckCircle2 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -33,11 +34,18 @@ export default function AdminDashboard() {
         api.get('/admin/stats')
       ]);
 
-      setComplaints(compRes.data);
-      setDepartments(deptRes.data);
-      setStats(statsRes.data);
+      setComplaints(compRes.data && compRes.data.length > 0 ? compRes.data : SAMPLE_COMPLAINTS);
+      setDepartments(deptRes.data && deptRes.data.length > 0 ? deptRes.data : SAMPLE_DEPARTMENTS);
+      setStats(statsRes.data || SAMPLE_STATS);
     } catch (err) {
-      console.error('Failed to load admin dashboard data', err);
+      console.warn('Backend offline, loading interactive admin demo data', err);
+      let filtered = [...SAMPLE_COMPLAINTS];
+      if (filterStatus) filtered = filtered.filter(c => c.status === filterStatus);
+      if (filterPriority) filtered = filtered.filter(c => c.priority === filterPriority);
+      if (filterDept) filtered = filtered.filter(c => c.department?.id === parseInt(filterDept));
+      setComplaints(filtered);
+      setDepartments(SAMPLE_DEPARTMENTS);
+      setStats(SAMPLE_STATS);
     } finally {
       setLoading(false);
     }

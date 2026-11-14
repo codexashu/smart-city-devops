@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import ComplaintCard from '../components/ComplaintCard';
 import ComplaintModal from '../components/ComplaintModal';
+import { SAMPLE_COMPLAINTS } from '../services/demoData';
 import { HardHat, CheckCircle2, Clock, Wrench } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -18,9 +19,14 @@ export default function DepartmentDashboard() {
       const res = await api.get('/department/complaints', {
         params: { status: selectedStatus || undefined }
       });
-      setComplaints(res.data);
+      setComplaints(res.data && res.data.length > 0 ? res.data : SAMPLE_COMPLAINTS.filter(c => c.department?.id === 1));
     } catch (err) {
-      console.error('Failed to fetch department work orders', err);
+      console.warn('Backend offline, loading department demo work orders', err);
+      let deptWork = SAMPLE_COMPLAINTS.filter(c => c.department?.id === 1 || !c.department);
+      if (selectedStatus) {
+        deptWork = deptWork.filter(c => c.status === selectedStatus);
+      }
+      setComplaints(deptWork);
     } finally {
       setLoading(false);
     }
