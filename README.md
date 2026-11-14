@@ -1,5 +1,6 @@
 # 🏙️ Smart City Complaint & Infrastructure Management System (DevOps Edition)
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-success.svg?style=for-the-badge&logo=github)](https://codexashu.github.io/smart-city-devops/)
 [![CI/CD Pipeline](https://github.com/codexashu/smart-city-devops/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/codexashu/smart-city-devops/actions/workflows/ci-cd.yml)
 [![Docker](https://img.shields.io/badge/Docker-Multi--stage-blue.svg)](https://www.docker.com/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-HPA%20%7C%20Self--healing-326ce5.svg)](https://kubernetes.io/)
@@ -7,6 +8,9 @@
 [![Grafana](https://img.shields.io/badge/Grafana-Live%20Dashboards-f46800.svg)](https://grafana.com/)
 [![Terraform](https://img.shields.io/badge/Terraform-IaC%20AWS-7b42bc.svg)](https://www.terraform.io/)
 [![Security](https://img.shields.io/badge/Trivy-CVE%20Zero--Gate-00b4d8.svg)](https://trivy.dev/)
+
+> 🌐 **Live Web Application:** [https://codexashu.github.io/smart-city-devops/](https://codexashu.github.io/smart-city-devops/)  
+> 🔗 **GitHub Repository:** [https://github.com/codexashu/smart-city-devops](https://github.com/codexashu/smart-city-devops)
 
 An enterprise-grade, production-style DevOps platform for municipal infrastructure maintenance and citizen grievance redressal. Citizens register public defects (potholes, water leaks, electrical hazards), administrators assign priorities and dispatch work to municipal departments, and field crews resolve issues with before/after photo verification.
 
